@@ -1,53 +1,38 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { isAxiosError } from 'axios'
-import { Link } from 'react-router-dom'
-import { useSignup } from '@/features/auth/hooks/useSignup'
+import { useNavigate } from 'react-router-dom'
+import { useLogin } from '@/features/auth/hooks/useLogin'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 
-const signupSchema = z.object({
+const loginSchema = z.object({
   email: z
     .string()
     .min(1, '이메일은 필수입니다.')
     .email('이메일 형식이 올바르지 않습니다.'),
-  password: z
-    .string()
-    .min(1, '비밀번호는 필수입니다.')
-    .regex(
-      /^(?=.*[A-Za-z])(?=.*\d).{8,}$/,
-      '비밀번호는 8자 이상, 영문과 숫자를 포함해야 합니다.',
-    ),
-  nickname: z
-    .string()
-    .min(1, '닉네임은 필수입니다.')
-    .min(2, '닉네임은 2~10자로 입력해주세요.')
-    .max(10, '닉네임은 2~10자로 입력해주세요.'),
+  password: z.string().min(1, '비밀번호는 필수입니다.'),
 })
 
-type SignupFormValues = z.infer<typeof signupSchema>
+type LoginFormValues = z.infer<typeof loginSchema>
 
-export function SignupForm() {
+export function LoginForm() {
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) })
-  const { mutate: signup, isPending, isSuccess, error } = useSignup()
+  } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) })
+  const { mutate: login, isPending, isSuccess, error } = useLogin()
 
-  if (isSuccess) {
-    return (
-      <p>
-        가입 완료,{' '}
-        <Link to="/login" className="underline">
-          로그인해주세요
-        </Link>
-        .
-      </p>
-    )
-  }
+  useEffect(() => {
+    if (isSuccess) {
+      navigate('/')
+    }
+  }, [isSuccess, navigate])
 
   const errorMessage = isAxiosError<{ message?: string }>(error)
     ? error.response?.data?.message
@@ -55,7 +40,7 @@ export function SignupForm() {
 
   return (
     <form
-      onSubmit={handleSubmit((values) => signup(values))}
+      onSubmit={handleSubmit((values) => login(values))}
       className="mx-auto flex w-full max-w-sm flex-col gap-6"
     >
       <FieldGroup>
@@ -69,14 +54,9 @@ export function SignupForm() {
           <Input id="password" type="password" {...register('password')} />
           <FieldError errors={[errors.password]} />
         </Field>
-        <Field>
-          <FieldLabel htmlFor="nickname">닉네임</FieldLabel>
-          <Input id="nickname" type="text" {...register('nickname')} />
-          <FieldError errors={[errors.nickname]} />
-        </Field>
         {errorMessage && <FieldError>{errorMessage}</FieldError>}
         <Button type="submit" disabled={isPending}>
-          가입하기
+          로그인
         </Button>
       </FieldGroup>
     </form>
