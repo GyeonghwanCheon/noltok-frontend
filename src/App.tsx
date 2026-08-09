@@ -14,7 +14,7 @@ function App() {
       logout(accessToken)
     }
     clearTokens()
-    navigate('/login')
+    navigate('/')
   }
 
   if (!isLoggedIn) {

@@ -39,13 +39,12 @@ export function SignupForm() {
 
   if (isSuccess) {
     return (
-      <p>
-        가입 완료,{' '}
-        <Link to="/login" className="underline">
-          로그인해주세요
-        </Link>
-        .
-      </p>
+      <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 pt-10">
+        <p>가입 완료, 로그인해주세요.</p>
+        <Button asChild>
+          <Link to="/login">로그인하러 가기</Link>
+        </Button>
+      </div>
     )
   }
 
