@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom'
 import { useMyInfo } from '@/features/user/hooks/useMyInfo'
+import { Button } from '@/components/ui/button'
 
 export function MyInfo() {
   const { data, isLoading, isError } = useMyInfo()
@@ -29,6 +31,9 @@ export function MyInfo() {
         <p className="text-sm text-muted-foreground">{data.email}</p>
         <p className="text-sm text-muted-foreground">가입일: {data.createdAt}</p>
       </div>
+      <Button asChild variant="outline">
+        <Link to="/me/edit">수정</Link>
+      </Button>
     </div>
   )
 }

@@ -5,3 +5,8 @@ export interface UserResponse {
   profileImageUrl: string | null
   createdAt: string
 }
+
+export interface UpdateProfileRequest {
+  nickname?: string
+  profileImageUrl?: string
+}
