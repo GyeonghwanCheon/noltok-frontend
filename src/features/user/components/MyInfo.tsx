@@ -49,6 +49,9 @@ export function MyInfo() {
         <Button variant="outline" onClick={handleLogout}>
           로그아웃
         </Button>
+        <Button asChild variant="outline">
+          <Link to="/me/delete">회원 탈퇴</Link>
+        </Button>
       </div>
     </div>
   )

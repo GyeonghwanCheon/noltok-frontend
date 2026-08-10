@@ -22,3 +22,7 @@ export interface UserSummaryResponse {
   nickname: string
   profileImageUrl: string | null
 }
+
+export interface DeleteAccountResponse {
+  userId: number
+}
