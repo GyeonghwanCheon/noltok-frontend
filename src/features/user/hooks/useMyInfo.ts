@@ -8,9 +8,10 @@ async function fetchMyInfo() {
   return data.data
 }
 
-export function useMyInfo() {
+export function useMyInfo(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['me'],
     queryFn: fetchMyInfo,
+    enabled: options?.enabled ?? true,
   })
 }

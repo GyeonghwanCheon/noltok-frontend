@@ -1,9 +1,23 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useMyInfo } from '@/features/user/hooks/useMyInfo'
+import { UserAvatar } from '@/features/user/components/UserAvatar'
+import { clearTokens, getAccessToken } from '@/features/auth/tokenStorage'
+import { useLogout } from '@/features/auth/hooks/useLogout'
 import { Button } from '@/components/ui/button'
 
 export function MyInfo() {
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useMyInfo()
+  const { mutate: logout } = useLogout()
+
+  const handleLogout = () => {
+    const accessToken = getAccessToken()
+    if (accessToken) {
+      logout(accessToken)
+    }
+    clearTokens()
+    navigate('/')
+  }
 
   if (isLoading) {
     return <p className="pt-10 text-center">불러오는 중...</p>
@@ -15,25 +29,24 @@ export function MyInfo() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 pt-10">
-      {data.profileImageUrl ? (
-        <img
-          src={data.profileImageUrl}
-          alt="프로필 이미지"
-          className="size-20 rounded-full object-cover"
-        />
-      ) : (
-        <div className="flex size-20 items-center justify-center rounded-full bg-muted text-2xl">
-          {data.nickname.charAt(0)}
-        </div>
-      )}
+      <UserAvatar
+        nickname={data.nickname}
+        profileImageUrl={data.profileImageUrl}
+        className="size-20 text-2xl"
+      />
       <div className="flex flex-col items-center gap-1">
         <p className="text-lg font-medium">{data.nickname}</p>
         <p className="text-sm text-muted-foreground">{data.email}</p>
         <p className="text-sm text-muted-foreground">가입일: {data.createdAt}</p>
       </div>
-      <Button asChild variant="outline">
-        <Link to="/me/edit">수정</Link>
-      </Button>
+      <div className="flex gap-3">
+        <Button asChild variant="outline">
+          <Link to="/me/edit">수정</Link>
+        </Button>
+        <Button variant="outline" onClick={handleLogout}>
+          로그아웃
+        </Button>
+      </div>
     </div>
   )
 }
