@@ -33,6 +33,9 @@ function App() {
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-4 pt-10">
       <p>로그인 상태입니다.</p>
+      <Link to="/me" className="underline">
+        내 정보 보기
+      </Link>
       <Button onClick={handleLogout}>로그아웃</Button>
     </div>
   )
