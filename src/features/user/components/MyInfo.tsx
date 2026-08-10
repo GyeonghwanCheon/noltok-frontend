@@ -43,6 +43,9 @@ export function MyInfo() {
         <Button asChild variant="outline">
           <Link to="/me/edit">수정</Link>
         </Button>
+        <Button asChild variant="outline">
+          <Link to="/me/password">비밀번호 변경</Link>
+        </Button>
         <Button variant="outline" onClick={handleLogout}>
           로그아웃
         </Button>

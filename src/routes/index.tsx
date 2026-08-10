@@ -5,6 +5,7 @@ import { SignupForm } from '@/features/auth/components/SignupForm'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { MyInfo } from '@/features/user/components/MyInfo'
 import { EditProfileForm } from '@/features/user/components/EditProfileForm'
+import { ChangePasswordForm } from '@/features/user/components/ChangePasswordForm'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -33,6 +34,10 @@ export const router = createBrowserRouter([
           {
             path: '/me/edit',
             element: <EditProfileForm />,
+          },
+          {
+            path: '/me/password',
+            element: <ChangePasswordForm />,
           },
         ],
       },

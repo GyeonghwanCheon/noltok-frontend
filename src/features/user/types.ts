@@ -10,3 +10,9 @@ export interface UpdateProfileRequest {
   nickname?: string
   profileImageUrl?: string
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
+  confirmPassword: string
+}
