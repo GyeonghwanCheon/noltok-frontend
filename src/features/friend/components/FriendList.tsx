@@ -1,4 +1,5 @@
 import { useFriends } from '@/features/friend/hooks/useFriends'
+import { FriendNav } from '@/features/friend/components/FriendNav'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { Button } from '@/components/ui/button'
 
@@ -7,15 +8,26 @@ export function FriendList() {
   const friends = data?.pages.flatMap((page) => page.friends) ?? []
 
   if (isLoading) {
-    return <p className="pt-10 text-center">불러오는 중...</p>
+    return (
+      <div className="mx-auto w-full max-w-sm pt-10">
+        <FriendNav />
+        <p className="text-center">불러오는 중...</p>
+      </div>
+    )
   }
 
   if (friends.length === 0) {
-    return <p className="pt-10 text-center text-muted-foreground">아직 친구가 없습니다.</p>
+    return (
+      <div className="mx-auto w-full max-w-sm pt-10">
+        <FriendNav />
+        <p className="text-center text-muted-foreground">아직 친구가 없습니다.</p>
+      </div>
+    )
   }
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-4 pt-10">
+      <FriendNav />
       <ul className="flex flex-col gap-3">
         {friends.map((friend) => (
           <li key={friend.friendId} className="flex items-center gap-3">

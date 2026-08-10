@@ -11,3 +11,30 @@ export interface FriendListResponse {
   hasNext: boolean
   nextCursor: number | null
 }
+
+export interface ReceivedFriendRequestDto {
+  friendId: number
+  requesterId: number
+  requesterNickname: string
+  requesterProfileImageUrl: string | null
+  requestedAt: string
+}
+
+export interface FriendReceivedListResponse {
+  requests: ReceivedFriendRequestDto[]
+  hasNext: boolean
+  nextCursor: number | null
+}
+
+export interface FriendAcceptResponse {
+  friendId: number
+  friendNickname: string
+  status: 'ACCEPTED'
+  message: string
+}
+
+export interface FriendRejectResponse {
+  friendId: number
+  status: 'REJECTED'
+  message: string
+}

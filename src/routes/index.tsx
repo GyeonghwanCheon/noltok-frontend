@@ -9,6 +9,7 @@ import { ChangePasswordForm } from '@/features/user/components/ChangePasswordFor
 import { UserSearch } from '@/features/user/components/UserSearch'
 import { DeleteAccount } from '@/features/user/components/DeleteAccount'
 import { FriendList } from '@/features/friend/components/FriendList'
+import { ReceivedFriendRequests } from '@/features/friend/components/ReceivedFriendRequests'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -53,6 +54,10 @@ export const router = createBrowserRouter([
           {
             path: '/friends',
             element: <FriendList />,
+          },
+          {
+            path: '/friends/received',
+            element: <ReceivedFriendRequests />,
           },
         ],
       },
