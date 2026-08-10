@@ -36,12 +36,7 @@ export function FriendList() {
               profileImageUrl={friend.profileImageUrl}
               className="size-9 text-sm"
             />
-            <div className="flex flex-col">
-              <span className="text-sm text-foreground">{friend.nickname}</span>
-              <span className="text-xs text-muted-foreground">
-                {friend.becameFriendAt}부터 친구
-              </span>
-            </div>
+            <span className="text-sm text-foreground">{friend.nickname}</span>
           </li>
         ))}
       </ul>

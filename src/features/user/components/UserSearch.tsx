@@ -1,17 +1,43 @@
 import { useState, type FormEvent } from 'react'
+import { isAxiosError } from 'axios'
 import { useSearchUsers } from '@/features/user/hooks/useSearchUsers'
+import { useSendFriendRequest } from '@/features/friend/hooks/useSendFriendRequest'
+import { FriendInfoModal } from '@/features/friend/components/FriendInfoModal'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import type { UserSummaryResponse } from '@/features/user/types'
 
 export function UserSearch() {
   const [keyword, setKeyword] = useState('')
   const [submitted, setSubmitted] = useState('')
   const { data, isLoading } = useSearchUsers(submitted)
 
+  const [sentNicknames, setSentNicknames] = useState<Set<string>>(new Set())
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const { mutate: sendRequest, variables: sendingNickname, isPending: isSending } =
+    useSendFriendRequest()
+
+  const [selectedUser, setSelectedUser] = useState<UserSummaryResponse | null>(null)
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
     setSubmitted(keyword)
+  }
+
+  const handleSendRequest = (nickname: string) => {
+    setErrors((prev) => ({ ...prev, [nickname]: '' }))
+    sendRequest(nickname, {
+      onSuccess: () => {
+        setSentNicknames((prev) => new Set(prev).add(nickname))
+      },
+      onError: (error) => {
+        const message = isAxiosError<{ message?: string }>(error)
+          ? (error.response?.data?.message ?? '요청 전송에 실패했습니다.')
+          : '요청 전송에 실패했습니다.'
+        setErrors((prev) => ({ ...prev, [nickname]: message }))
+      },
+    })
   }
 
   return (
@@ -35,18 +61,50 @@ export function UserSearch() {
 
       {data && data.length > 0 && (
         <ul className="flex flex-col gap-3">
-          {data.map((user) => (
-            <li key={user.userId} className="flex items-center gap-3">
-              <UserAvatar
-                nickname={user.nickname}
-                profileImageUrl={user.profileImageUrl}
-                className="size-9 text-sm"
-              />
-              <span className="text-sm text-foreground">{user.nickname}</span>
-            </li>
-          ))}
+          {data.map((user) => {
+            const alreadySent = sentNicknames.has(user.nickname)
+            return (
+              <li key={user.userId} className="flex flex-col gap-1">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setSelectedUser(user)}>
+                    <UserAvatar
+                      nickname={user.nickname}
+                      profileImageUrl={user.profileImageUrl}
+                      className="size-9 text-sm"
+                    />
+                  </button>
+                  <button
+                    className="flex-1 text-left text-sm text-foreground"
+                    onClick={() => setSelectedUser(user)}
+                  >
+                    {user.nickname}
+                  </button>
+                  <Button
+                    size="sm"
+                    variant={alreadySent ? 'outline' : 'default'}
+                    disabled={alreadySent || (isSending && sendingNickname === user.nickname)}
+                    onClick={() => handleSendRequest(user.nickname)}
+                  >
+                    {alreadySent ? '요청 보냄' : '요청'}
+                  </Button>
+                </div>
+                {errors[user.nickname] && (
+                  <p className="text-xs text-destructive">{errors[user.nickname]}</p>
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
+
+      <FriendInfoModal
+        user={selectedUser}
+        onOpenChange={(open) => !open && setSelectedUser(null)}
+        alreadySent={!!selectedUser && sentNicknames.has(selectedUser.nickname)}
+        isSending={isSending && !!selectedUser && sendingNickname === selectedUser.nickname}
+        errorMessage={selectedUser ? errors[selectedUser.nickname] : undefined}
+        onSendRequest={handleSendRequest}
+      />
     </div>
   )
 }

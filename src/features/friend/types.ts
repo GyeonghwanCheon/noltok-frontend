@@ -38,3 +38,15 @@ export interface FriendRejectResponse {
   status: 'REJECTED'
   message: string
 }
+
+export interface SendFriendRequestRequest {
+  nickname: string
+}
+
+export interface SendFriendRequestResponse {
+  friendId: number
+  receiverId: number
+  receiverNickname: string
+  status: 'PENDING'
+  requestedAt: string
+}
