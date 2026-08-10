@@ -16,3 +16,9 @@ export interface ChangePasswordRequest {
   newPassword: string
   confirmPassword: string
 }
+
+export interface UserSummaryResponse {
+  userId: number
+  nickname: string
+  profileImageUrl: string | null
+}

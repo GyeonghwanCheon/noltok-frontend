@@ -6,6 +6,7 @@ import { LoginForm } from '@/features/auth/components/LoginForm'
 import { MyInfo } from '@/features/user/components/MyInfo'
 import { EditProfileForm } from '@/features/user/components/EditProfileForm'
 import { ChangePasswordForm } from '@/features/user/components/ChangePasswordForm'
+import { UserSearch } from '@/features/user/components/UserSearch'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
           {
             path: '/me/password',
             element: <ChangePasswordForm />,
+          },
+          {
+            path: '/users/search',
+            element: <UserSearch />,
           },
         ],
       },

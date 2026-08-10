@@ -4,7 +4,7 @@ import { useMyInfo } from '@/features/user/hooks/useMyInfo'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { Button } from '@/components/ui/button'
 
-const categories: { label: string; to: string }[] = []
+const categories: { label: string; to: string }[] = [{ label: '유저 검색', to: '/users/search' }]
 
 function App() {
   const isLoggedIn = !!getAccessToken()
