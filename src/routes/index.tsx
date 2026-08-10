@@ -8,6 +8,7 @@ import { EditProfileForm } from '@/features/user/components/EditProfileForm'
 import { ChangePasswordForm } from '@/features/user/components/ChangePasswordForm'
 import { UserSearch } from '@/features/user/components/UserSearch'
 import { DeleteAccount } from '@/features/user/components/DeleteAccount'
+import { FriendList } from '@/features/friend/components/FriendList'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
           {
             path: '/me/delete',
             element: <DeleteAccount />,
+          },
+          {
+            path: '/friends',
+            element: <FriendList />,
           },
         ],
       },
