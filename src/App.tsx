@@ -5,6 +5,7 @@ import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { Button } from '@/components/ui/button'
 
 const categories: { label: string; to: string }[] = [
+  { label: '채팅방', to: '/rooms' },
   { label: '친구', to: '/friends' },
   { label: '유저 검색', to: '/users/search' },
 ]
