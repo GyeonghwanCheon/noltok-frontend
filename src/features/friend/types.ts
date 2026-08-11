@@ -69,3 +69,8 @@ export interface FriendCancelResponse {
   friendId: number
   message: string
 }
+
+export interface FriendDeleteResponse {
+  friendId: number
+  message: string
+}

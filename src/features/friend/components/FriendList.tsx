@@ -1,11 +1,33 @@
+import { useState } from 'react'
+import { isAxiosError } from 'axios'
 import { useFriends } from '@/features/friend/hooks/useFriends'
+import { useDeleteFriend } from '@/features/friend/hooks/useDeleteFriend'
 import { FriendNav } from '@/features/friend/components/FriendNav'
+import { FriendDeleteDialog } from '@/features/friend/components/FriendDeleteDialog'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { Button } from '@/components/ui/button'
+import type { FriendDto } from '@/features/friend/types'
 
 export function FriendList() {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useFriends()
   const friends = data?.pages.flatMap((page) => page.friends) ?? []
+
+  const [targetFriend, setTargetFriend] = useState<FriendDto | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+  const { mutate: deleteFriend, isPending: isDeleting } = useDeleteFriend()
+
+  const handleConfirmDelete = (friendId: number) => {
+    setDeleteError('')
+    deleteFriend(friendId, {
+      onSuccess: () => setTargetFriend(null),
+      onError: (error) => {
+        const message = isAxiosError<{ message?: string }>(error)
+          ? (error.response?.data?.message ?? '삭제에 실패했습니다.')
+          : '삭제에 실패했습니다.'
+        setDeleteError(message)
+      },
+    })
+  }
 
   if (isLoading) {
     return (
@@ -36,7 +58,17 @@ export function FriendList() {
               profileImageUrl={friend.profileImageUrl}
               className="size-9 text-sm"
             />
-            <span className="text-sm text-foreground">{friend.nickname}</span>
+            <span className="flex-1 text-sm text-foreground">{friend.nickname}</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setDeleteError('')
+                setTargetFriend(friend)
+              }}
+            >
+              삭제
+            </Button>
           </li>
         ))}
       </ul>
@@ -45,6 +77,14 @@ export function FriendList() {
           더보기
         </Button>
       )}
+
+      <FriendDeleteDialog
+        friend={targetFriend}
+        onOpenChange={(open) => !open && setTargetFriend(null)}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }
