@@ -14,6 +14,7 @@ import { SentFriendRequests } from '@/features/friend/components/SentFriendReque
 import { BlockedUsers } from '@/features/block/components/BlockedUsers'
 import { ChatRoomList } from '@/features/chatroom/components/ChatRoomList'
 import { CreateRoomForm } from '@/features/chatroom/components/CreateRoomForm'
+import { SearchRoomForm } from '@/features/chatroom/components/SearchRoomForm'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -78,6 +79,10 @@ export const router = createBrowserRouter([
           {
             path: '/rooms/new',
             element: <CreateRoomForm />,
+          },
+          {
+            path: '/rooms/search',
+            element: <SearchRoomForm />,
           },
         ],
       },

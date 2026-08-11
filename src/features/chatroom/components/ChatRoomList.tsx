@@ -15,9 +15,14 @@ export function ChatRoomList() {
   const rooms = data?.pages.flatMap((page) => page.rooms) ?? []
 
   const newRoomButton = (
-    <Button asChild size="sm" className="self-end">
-      <Link to="/rooms/new">새 채팅방</Link>
-    </Button>
+    <div className="flex justify-end gap-2 self-end">
+      <Button asChild size="sm" variant="outline">
+        <Link to="/rooms/search">검색</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link to="/rooms/new">새 채팅방</Link>
+      </Button>
+    </div>
   )
 
   if (isLoading) {

@@ -32,3 +32,22 @@ export interface ChatRoomResponse {
   myRole: 'ADMIN' | 'MEMBER'
   createdAt: string
 }
+
+export interface SearchRoomDto {
+  roomId: number
+  roomname: string
+  type: Extract<ChatRoomType, 'OPEN' | 'OPEN_PRIVATE'>
+  memberCount: number
+}
+
+export interface ChatRoomSearchResponse {
+  rooms: SearchRoomDto[]
+  hasNext: boolean
+  nextCursor: number | null
+}
+
+export interface JoinRoomResponse {
+  roomId: number
+  myRole: 'MEMBER'
+  message: string
+}
