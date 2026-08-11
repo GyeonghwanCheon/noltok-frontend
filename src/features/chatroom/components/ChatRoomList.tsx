@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import { useChatRooms } from '@/features/chatroom/hooks/useChatRooms'
+import { useLeaveRoom } from '@/features/chatroom/hooks/useLeaveRoom'
+import { LeaveRoomDialog } from '@/features/chatroom/components/LeaveRoomDialog'
 import { Button } from '@/components/ui/button'
-import type { ChatRoomType } from '@/features/chatroom/types'
+import type { ChatRoomSummaryDto, ChatRoomType } from '@/features/chatroom/types'
 
 const typeLabels: Record<ChatRoomType, string> = {
   DIRECT: '1:1',
@@ -13,6 +17,23 @@ const typeLabels: Record<ChatRoomType, string> = {
 export function ChatRoomList() {
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useChatRooms()
   const rooms = data?.pages.flatMap((page) => page.rooms) ?? []
+
+  const [leaveTarget, setLeaveTarget] = useState<ChatRoomSummaryDto | null>(null)
+  const [leaveError, setLeaveError] = useState('')
+  const { mutate: leaveRoom, isPending: isLeaving } = useLeaveRoom()
+
+  const handleConfirmLeave = (roomId: number) => {
+    setLeaveError('')
+    leaveRoom(roomId, {
+      onSuccess: () => setLeaveTarget(null),
+      onError: (error) => {
+        const message = isAxiosError<{ message?: string }>(error)
+          ? (error.response?.data?.message ?? '나가기에 실패했습니다.')
+          : '나가기에 실패했습니다.'
+        setLeaveError(message)
+      },
+    })
+  }
 
   const newRoomButton = (
     <div className="flex justify-end gap-2 self-end">
@@ -70,6 +91,16 @@ export function ChatRoomList() {
                 {room.unreadCount}
               </span>
             )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setLeaveError('')
+                setLeaveTarget(room)
+              }}
+            >
+              나가기
+            </Button>
           </li>
         ))}
       </ul>
@@ -78,6 +109,14 @@ export function ChatRoomList() {
           더보기
         </Button>
       )}
+
+      <LeaveRoomDialog
+        room={leaveTarget}
+        onOpenChange={(open) => !open && setLeaveTarget(null)}
+        isLeaving={isLeaving}
+        errorMessage={leaveError}
+        onConfirm={handleConfirmLeave}
+      />
     </div>
   )
 }

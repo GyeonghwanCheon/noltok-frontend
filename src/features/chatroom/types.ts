@@ -51,3 +51,8 @@ export interface JoinRoomResponse {
   myRole: 'MEMBER'
   message: string
 }
+
+export interface ChatRoomLeaveResponse {
+  roomId: number
+  message: string
+}
