@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 const tabs = [
   { label: '친구 목록', to: '/friends' },
   { label: '받은 요청', to: '/friends/received' },
+  { label: '보낸 요청', to: '/friends/sent' },
 ]
 
 export function FriendNav() {

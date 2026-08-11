@@ -10,6 +10,7 @@ import { UserSearch } from '@/features/user/components/UserSearch'
 import { DeleteAccount } from '@/features/user/components/DeleteAccount'
 import { FriendList } from '@/features/friend/components/FriendList'
 import { ReceivedFriendRequests } from '@/features/friend/components/ReceivedFriendRequests'
+import { SentFriendRequests } from '@/features/friend/components/SentFriendRequests'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -58,6 +59,10 @@ export const router = createBrowserRouter([
           {
             path: '/friends/received',
             element: <ReceivedFriendRequests />,
+          },
+          {
+            path: '/friends/sent',
+            element: <SentFriendRequests />,
           },
         ],
       },

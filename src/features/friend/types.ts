@@ -50,3 +50,22 @@ export interface SendFriendRequestResponse {
   status: 'PENDING'
   requestedAt: string
 }
+
+export interface SentFriendRequestDto {
+  friendId: number
+  receiverId: number
+  receiverNickname: string
+  receiverProfileImageUrl: string | null
+  requestedAt: string
+}
+
+export interface FriendSentListResponse {
+  requests: SentFriendRequestDto[]
+  hasNext: boolean
+  nextCursor: number | null
+}
+
+export interface FriendCancelResponse {
+  friendId: number
+  message: string
+}
