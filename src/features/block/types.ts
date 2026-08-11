@@ -8,3 +8,22 @@ export interface BlockResponse {
   blockedNickname: string
   blockedAt: string
 }
+
+export interface BlockedUserDto {
+  blockId: number
+  userId: number
+  nickname: string
+  profileImageUrl: string | null
+  blockedAt: string
+}
+
+export interface BlockListResponse {
+  blocks: BlockedUserDto[]
+  hasNext: boolean
+  nextCursor: number | null
+}
+
+export interface UnblockResponse {
+  blockId: number
+  message: string
+}

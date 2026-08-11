@@ -11,6 +11,7 @@ import { DeleteAccount } from '@/features/user/components/DeleteAccount'
 import { FriendList } from '@/features/friend/components/FriendList'
 import { ReceivedFriendRequests } from '@/features/friend/components/ReceivedFriendRequests'
 import { SentFriendRequests } from '@/features/friend/components/SentFriendRequests'
+import { BlockedUsers } from '@/features/block/components/BlockedUsers'
 import { ProtectedRoute } from '@/routes/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
           {
             path: '/friends/sent',
             element: <SentFriendRequests />,
+          },
+          {
+            path: '/blocks',
+            element: <BlockedUsers />,
           },
         ],
       },
