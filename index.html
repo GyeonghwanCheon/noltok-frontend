@@ -8,6 +8,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // sockjs-client references the Node.js `global` object, which doesn't exist in the browser
+      window.global ??= window
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

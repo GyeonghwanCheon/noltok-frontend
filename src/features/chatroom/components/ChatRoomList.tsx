@@ -73,7 +73,7 @@ export function ChatRoomList() {
             key={room.roomId}
             className="flex items-center gap-3 rounded-lg border border-border px-4 py-3"
           >
-            <div className="flex flex-1 flex-col gap-1">
+            <Link to={`/rooms/${room.roomId}`} className="flex flex-1 flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-foreground">
                   {room.roomname ?? '1:1 대화'}
@@ -85,7 +85,7 @@ export function ChatRoomList() {
               <span className="truncate text-xs text-muted-foreground">
                 {room.lastMessage ?? '메시지가 없습니다'}
               </span>
-            </div>
+            </Link>
             {room.unreadCount > 0 && (
               <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                 {room.unreadCount}
