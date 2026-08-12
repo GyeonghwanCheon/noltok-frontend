@@ -61,3 +61,26 @@ export interface ChatRoomReadResponse {
   roomId: number
   lastReadMessageId: number
 }
+
+export interface MemberDto {
+  userId: number
+  nickname: string
+  role: 'ADMIN' | 'MEMBER'
+  profileImageUrl: string | null
+  lastReadMessageId: number | null
+}
+
+export interface ChatRoomDetailResponse {
+  roomId: number
+  roomname: string | null
+  type: ChatRoomType
+  myRole: 'ADMIN' | 'MEMBER'
+  members: MemberDto[]
+  createdAt: string
+}
+
+export interface ChatRoomReadEventResponse {
+  roomId: number
+  userId: number
+  lastReadMessageId: number
+}

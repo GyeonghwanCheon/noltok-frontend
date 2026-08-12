@@ -3,12 +3,14 @@ import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { getAccessToken } from '@/features/auth/tokenStorage'
 import type { ChatMessageResponse } from '@/features/chatmessage/types'
+import type { ChatRoomReadEventResponse } from '@/features/chatroom/types'
 
 type ConnectionStatus = 'connecting' | 'connected' | 'error'
 
 interface UseChatSocketOptions {
   onMessage?: (message: ChatMessageResponse) => void
   onSendError?: (message: string) => void
+  onReadUpdate?: (event: ChatRoomReadEventResponse) => void
 }
 
 export function useChatSocket(roomId: number, options?: UseChatSocketOptions) {
@@ -34,6 +36,9 @@ export function useChatSocket(roomId: number, options?: UseChatSocketOptions) {
         })
         client.subscribe('/user/queue/errors', (frame) => {
           optionsRef.current?.onSendError?.(frame.body)
+        })
+        client.subscribe(`/user/queue/rooms/${roomId}/reads`, (frame) => {
+          optionsRef.current?.onReadUpdate?.(JSON.parse(frame.body) as ChatRoomReadEventResponse)
         })
         setStatus('connected')
       },

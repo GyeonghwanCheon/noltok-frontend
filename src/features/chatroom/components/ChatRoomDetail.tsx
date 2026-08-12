@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { useChatSocket } from '@/features/chatroom/hooks/useChatSocket'
 import { useMarkAsRead } from '@/features/chatroom/hooks/useMarkAsRead'
+import { useChatRoomDetail } from '@/features/chatroom/hooks/useChatRoomDetail'
 import { useChatMessages } from '@/features/chatmessage/hooks/useChatMessages'
 import { useMyInfo } from '@/features/user/hooks/useMyInfo'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { ChatMessageListResponse, ChatMessageResponse } from '@/features/chatmessage/types'
+import type { ChatRoomReadEventResponse } from '@/features/chatroom/types'
 
 const statusLabels = {
   connecting: '연결 중...',
@@ -41,6 +43,22 @@ export function ChatRoomDetail() {
   } = useChatMessages(roomId)
   const messages = data ? [...data.pages].reverse().flatMap((page) => page.messages) : []
 
+  // 멤버별 마지막으로 읽은 메시지 id — 초기값은 REST(입장 전 이미 읽힌 상태),
+  // 이후 갱신은 소켓 이벤트로. REST만 쓰면 상대가 지금 읽어도 화면이 안 바뀌고,
+  // 소켓만 쓰면 입장 전에 이미 일어난 읽음 상태를 알 방법이 없어서 둘 다 필요함
+  const { data: roomDetail } = useChatRoomDetail(roomId)
+  const [readStatus, setReadStatus] = useState<Map<number, number>>(new Map())
+
+  useEffect(() => {
+    if (roomDetail) {
+      setReadStatus(new Map(roomDetail.members.map((m) => [m.userId, m.lastReadMessageId ?? 0])))
+    }
+  }, [roomDetail])
+
+  const handleReadUpdate = (event: ChatRoomReadEventResponse) => {
+    setReadStatus((prev) => new Map(prev).set(event.userId, event.lastReadMessageId))
+  }
+
   const handleIncomingMessage = (message: ChatMessageResponse) => {
     queryClient.setQueryData<InfiniteData<ChatMessageListResponse>>(
       ['chatMessages', roomId],
@@ -63,6 +81,7 @@ export function ChatRoomDetail() {
   const { status, errorMessage, sendMessage } = useChatSocket(roomId, {
     onMessage: handleIncomingMessage,
     onSendError: setSendError,
+    onReadUpdate: handleReadUpdate,
   })
 
   const handleSubmit = (event: FormEvent) => {
@@ -138,8 +157,19 @@ export function ChatRoomDetail() {
                   // 정해지지 않은 wrapper를 기준으로 계산돼서 순환 참조가 생기고, 텍스트 길이에
                   // 따라 폭이 제멋대로(짧은 텍스트일수록 더 좁게) 나오는 버그가 있었음
                   if (isMine) {
+                    // 상대가 보낸 메시지엔 표시 안 함(내가 이미 본 거라 불필요) — 내가 보낸
+                    // 메시지에만, 나를 제외한 멤버 중 아직 안 읽은 사람 수를 계산
+                    const unreadCount = (roomDetail?.members ?? []).filter(
+                      (member) =>
+                        member.userId !== me?.userId &&
+                        (readStatus.get(member.userId) ?? 0) < message.messageId,
+                    ).length
+
                     return (
-                      <li key={message.messageId} className="flex min-w-0 flex-col items-end">
+                      <li key={message.messageId} className="flex min-w-0 items-end justify-end gap-1.5">
+                        {unreadCount > 0 && (
+                          <span className="shrink-0 text-xs text-muted-foreground">{unreadCount}</span>
+                        )}
                         <div className="max-w-[80%] rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">
                           {message.content}
                         </div>
