@@ -56,3 +56,8 @@ export interface ChatRoomLeaveResponse {
   roomId: number
   message: string
 }
+
+export interface ChatRoomReadResponse {
+  roomId: number
+  lastReadMessageId: number
+}

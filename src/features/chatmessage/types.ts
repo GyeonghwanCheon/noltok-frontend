@@ -5,6 +5,7 @@ export interface ChatMessageResponse {
   roomId: number
   senderId: number
   senderNickname: string
+  senderProfileImageUrl: string | null
   content: string
   type: ChatMessageType
   fileUrl: string | null

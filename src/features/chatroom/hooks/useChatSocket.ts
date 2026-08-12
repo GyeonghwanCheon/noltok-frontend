@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Client } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { getAccessToken } from '@/features/auth/tokenStorage'
@@ -6,13 +6,19 @@ import type { ChatMessageResponse } from '@/features/chatmessage/types'
 
 type ConnectionStatus = 'connecting' | 'connected' | 'error'
 
-export function useChatSocket(roomId: number, onMessage?: (message: ChatMessageResponse) => void) {
+interface UseChatSocketOptions {
+  onMessage?: (message: ChatMessageResponse) => void
+  onSendError?: (message: string) => void
+}
+
+export function useChatSocket(roomId: number, options?: UseChatSocketOptions) {
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const [errorMessage, setErrorMessage] = useState<string>()
+  const clientRef = useRef<Client | null>(null)
 
-  // onMessage는 매 렌더 새 함수일 수 있어 ref로 최신값만 참조 (연결을 재생성하지 않기 위함)
-  const onMessageRef = useRef(onMessage)
-  onMessageRef.current = onMessage
+  // 콜백은 매 렌더 새 함수일 수 있어 ref로 최신값만 참조 (연결을 재생성하지 않기 위함)
+  const optionsRef = useRef(options)
+  optionsRef.current = options
 
   useEffect(() => {
     setStatus('connecting')
@@ -24,7 +30,10 @@ export function useChatSocket(roomId: number, onMessage?: (message: ChatMessageR
       reconnectDelay: 0,
       onConnect: () => {
         client.subscribe(`/user/queue/rooms/${roomId}`, (frame) => {
-          onMessageRef.current?.(JSON.parse(frame.body) as ChatMessageResponse)
+          optionsRef.current?.onMessage?.(JSON.parse(frame.body) as ChatMessageResponse)
+        })
+        client.subscribe('/user/queue/errors', (frame) => {
+          optionsRef.current?.onSendError?.(frame.body)
         })
         setStatus('connected')
       },
@@ -37,12 +46,24 @@ export function useChatSocket(roomId: number, onMessage?: (message: ChatMessageR
       },
     })
 
+    clientRef.current = client
     client.activate()
 
     return () => {
       client.deactivate()
+      clientRef.current = null
     }
   }, [roomId])
 
-  return { status, errorMessage }
+  const sendMessage = useCallback(
+    (content: string) => {
+      clientRef.current?.publish({
+        destination: `/app/rooms/${roomId}/messages`,
+        body: JSON.stringify({ type: 'TEXT', content }),
+      })
+    },
+    [roomId],
+  )
+
+  return { status, errorMessage, sendMessage }
 }
