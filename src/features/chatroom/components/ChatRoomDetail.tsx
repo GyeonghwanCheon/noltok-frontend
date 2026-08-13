@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
+import { Search } from 'lucide-react'
 import { useChatSocket } from '@/features/chatroom/hooks/useChatSocket'
 import { useMarkAsRead } from '@/features/chatroom/hooks/useMarkAsRead'
 import { useChatRoomDetail } from '@/features/chatroom/hooks/useChatRoomDetail'
@@ -10,6 +11,7 @@ import { useDeleteMessage } from '@/features/chatmessage/hooks/useDeleteMessage'
 import { useMyInfo } from '@/features/user/hooks/useMyInfo'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
 import { MessageDeleteDialog } from '@/features/chatmessage/components/MessageDeleteDialog'
+import { MessageSearchDialog } from '@/features/chatmessage/components/MessageSearchDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
@@ -140,6 +142,15 @@ export function ChatRoomDetail() {
     setContent('')
   }
 
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // 검색 결과 클릭 시 이미 로드된 메시지면 스크롤 이동, 아직 안 불러온
+  // 과거 메시지면 아무 동작 없음 — 임의 시점으로 점프하려면 메시지 목록을
+  // 그 지점 기준으로 새로 불러오는 별도 전략이 필요해서 이번 스코프 밖
+  const handleSelectSearchResult = (messageId: number) => {
+    document.getElementById(`message-${messageId}`)?.scrollIntoView({ block: 'center' })
+  }
+
   // DOM 커밋 이후(useEffect)에 scrollHeight를 읽어야 방금 추가된 메시지까지 반영된 높이가 나옴.
   // 의존성이 최신 메시지 id라 "더보기"로 과거 메시지를 앞에 붙이는 경우(최신 메시지는 그대로)엔
   // 재실행되지 않아 스크롤 위치가 안 흔들림
@@ -161,7 +172,19 @@ export function ChatRoomDetail() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-3 pt-10">
-      <p className="text-center text-xs text-muted-foreground">{statusLabels[status]}</p>
+      <div className="flex items-center justify-between">
+        {/* size-7 스페이서 — 오른쪽 검색 버튼과 폭을 맞춰서 상태 텍스트가 실제로 가운데 오도록 */}
+        <span className="size-7 shrink-0" />
+        <p className="flex-1 text-center text-xs text-muted-foreground">{statusLabels[status]}</p>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setSearchOpen(true)}
+          aria-label="메시지 검색"
+        >
+          <Search />
+        </Button>
+      </div>
       {status === 'error' && errorMessage && (
         <p className="text-center text-xs text-destructive">{errorMessage}</p>
       )}
@@ -213,7 +236,11 @@ export function ChatRoomDetail() {
                     ).length
 
                     return (
-                      <li key={message.messageId} className="flex min-w-0 items-end justify-end gap-1.5">
+                      <li
+                        key={message.messageId}
+                        id={`message-${message.messageId}`}
+                        className="flex min-w-0 items-end justify-end gap-1.5"
+                      >
                         {unreadCount > 0 && (
                           <span className="shrink-0 text-xs text-muted-foreground">{unreadCount}</span>
                         )}
@@ -237,7 +264,11 @@ export function ChatRoomDetail() {
                   }
 
                   return (
-                    <li key={message.messageId} className="flex min-w-0 items-end gap-2">
+                    <li
+                      key={message.messageId}
+                      id={`message-${message.messageId}`}
+                      className="flex min-w-0 items-end gap-2"
+                    >
                       {showSenderInfo ? (
                         <UserAvatar
                           nickname={message.senderNickname}
@@ -279,6 +310,13 @@ export function ChatRoomDetail() {
         </form>
       </div>
       {sendError && <p className="text-xs text-destructive">{sendError}</p>}
+
+      <MessageSearchDialog
+        roomId={roomId}
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onSelectMessage={handleSelectSearchResult}
+      />
 
       <MessageDeleteDialog
         open={deleteTarget !== null}
