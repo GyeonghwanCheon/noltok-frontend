@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { useChatSocket } from '@/features/chatroom/hooks/useChatSocket'
 import { useMarkAsRead } from '@/features/chatroom/hooks/useMarkAsRead'
 import { useChatRoomDetail } from '@/features/chatroom/hooks/useChatRoomDetail'
 import { useChatMessages } from '@/features/chatmessage/hooks/useChatMessages'
+import { useDeleteMessage } from '@/features/chatmessage/hooks/useDeleteMessage'
 import { useMyInfo } from '@/features/user/hooks/useMyInfo'
 import { UserAvatar } from '@/features/user/components/UserAvatar'
+import { MessageDeleteDialog } from '@/features/chatmessage/components/MessageDeleteDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import type { ChatMessageListResponse, ChatMessageResponse } from '@/features/chatmessage/types'
 import type { ChatRoomReadEventResponse } from '@/features/chatroom/types'
 
@@ -75,6 +79,23 @@ export function ChatRoomDetail() {
     )
   }
 
+  // 내가 삭제했을 때(mutation onSuccess)와 남이 삭제했을 때(소켓 이벤트) 둘 다
+  // 여기로 모아서 처리 — 캐시에서 지우는 로직이 두 곳에 따로 있으면 나중에
+  // 한쪽만 고치는 실수가 생기기 쉬움
+  const removeMessageFromCache = (messageId: number) => {
+    queryClient.setQueryData<InfiniteData<ChatMessageListResponse>>(
+      ['chatMessages', roomId],
+      (old) => {
+        if (!old) return old
+        const pages = old.pages.map((page) => ({
+          ...page,
+          messages: page.messages.filter((m) => m.messageId !== messageId),
+        }))
+        return { ...old, pages }
+      },
+    )
+  }
+
   const [content, setContent] = useState('')
   const [sendError, setSendError] = useState('')
 
@@ -82,7 +103,33 @@ export function ChatRoomDetail() {
     onMessage: handleIncomingMessage,
     onSendError: setSendError,
     onReadUpdate: handleReadUpdate,
+    onMessageDeleted: removeMessageFromCache,
   })
+
+  // 삭제 대상 메시지 id — 우클릭 메뉴에서 "삭제" 선택 시 세팅, 확인 다이얼로그가 이 값으로 열림
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+  const { mutate: deleteMessage, isPending: isDeleting } = useDeleteMessage()
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget === null) return
+    setDeleteError('')
+    deleteMessage(
+      { roomId, messageId: deleteTarget },
+      {
+        onSuccess: () => {
+          removeMessageFromCache(deleteTarget)
+          setDeleteTarget(null)
+        },
+        onError: (error) => {
+          const message = isAxiosError<{ message?: string }>(error)
+            ? (error.response?.data?.message ?? '삭제에 실패했습니다.')
+            : '삭제에 실패했습니다.'
+          setDeleteError(message)
+        },
+      },
+    )
+  }
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -170,9 +217,21 @@ export function ChatRoomDetail() {
                         {unreadCount > 0 && (
                           <span className="shrink-0 text-xs text-muted-foreground">{unreadCount}</span>
                         )}
-                        <div className="max-w-[80%] rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">
-                          {message.content}
-                        </div>
+                        <ContextMenu>
+                          <ContextMenuTrigger asChild>
+                            <div className="max-w-[80%] rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">
+                              {message.content}
+                            </div>
+                          </ContextMenuTrigger>
+                          <ContextMenuContent>
+                            <ContextMenuItem
+                              variant="destructive"
+                              onSelect={() => setDeleteTarget(message.messageId)}
+                            >
+                              삭제
+                            </ContextMenuItem>
+                          </ContextMenuContent>
+                        </ContextMenu>
                       </li>
                     )
                   }
@@ -220,6 +279,19 @@ export function ChatRoomDetail() {
         </form>
       </div>
       {sendError && <p className="text-xs text-destructive">{sendError}</p>}
+
+      <MessageDeleteDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null)
+            setDeleteError('')
+          }
+        }}
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

@@ -17,3 +17,8 @@ export interface ChatMessageListResponse {
   hasNext: boolean
   nextCursor: number | null
 }
+
+export interface ChatMessageDeleteResponse {
+  messageId: number
+  message: string
+}
